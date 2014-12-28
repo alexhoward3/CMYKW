@@ -1,4 +1,4 @@
-package com.esw.cmyk;
+package com.esw.cmykw;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationListener;
@@ -12,9 +12,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.esw.Meta;
 
-public class CMYK extends ApplicationAdapter implements ApplicationListener, InputProcessor {
-	public static int SCREEN_WIDTH = 1600; //TODO (Alex) Fix these constants!
-	public static int SCREEN_HEIGHT = 900;
+public class CMYKW extends ApplicationAdapter implements ApplicationListener, InputProcessor {
+	public static int SCREEN_WIDTH = 0; //TODO (Alex) Fix these constants!
+	public static int SCREEN_HEIGHT = 0;
 
 	private SpriteBatch batch;
 	private Texture texture;
@@ -24,6 +24,11 @@ public class CMYK extends ApplicationAdapter implements ApplicationListener, Inp
 	private float deltaTime;
 	private float debugClock;
 
+	public CMYKW(int w, int h) {
+		SCREEN_WIDTH = w;
+		SCREEN_HEIGHT = h;
+	}
+	
 	@Override
 	public void create () {
 		Meta.println("CMYKW");
@@ -33,6 +38,8 @@ public class CMYK extends ApplicationAdapter implements ApplicationListener, Inp
 		debugMessage.setColor(Color.GREEN);
 		box = new Box(texture);
 		
+		box.setSize(box.getWidth()/2, box.getHeight()/2);
+		box.setOrigin(box.getHeight()/2, box.getHeight()/2);
 		box.setCenter(SCREEN_WIDTH/2,  SCREEN_HEIGHT/2);
 	}
 
@@ -51,12 +58,12 @@ public class CMYK extends ApplicationAdapter implements ApplicationListener, Inp
 		
 		if(!box.isRotatingRight && Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
 			message = "Debug: left key pressed";
-			Meta.println("Rotating Left");
+			//Meta.println("Rotating Left"); //CONSOLE DEBUG
 			box.isRotatingRight = true;
 			debugClock = 0;
 		} else if(!box.isRotatingLeft && Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
 			message = "Debug: right key pressed";
-			Meta.println("Rotating Right");
+			//Meta.println("Rotating Right"); //CONSOLE DEBUG
 			box.isRotatingLeft = true;
 			debugClock = 0;
 		}

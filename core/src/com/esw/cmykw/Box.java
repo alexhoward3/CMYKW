@@ -1,4 +1,4 @@
-package com.esw.cmyk;
+package com.esw.cmykw;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
