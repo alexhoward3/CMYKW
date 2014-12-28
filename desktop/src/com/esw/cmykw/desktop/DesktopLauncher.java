@@ -6,6 +6,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.esw.Meta;
 import com.esw.cmykw.CMYKW;
 
+@SuppressWarnings("unused")
 public class DesktopLauncher {
 	
 	private static short AA = 8;
@@ -37,7 +38,7 @@ public class DesktopLauncher {
 		
 		resolution = arg[3];
 		switch(resolution) {
-		//SCREEN SIZES //TODO (Alex) Command line switches for resolution (?)
+		
 		case "2560x1600": 	config.width = 2560;	//Standard 16 x 10 resolution
 							config.height = 1600;	//Standard 16 x 10 resolution
 							break;
@@ -70,6 +71,7 @@ public class DesktopLauncher {
 					config.height = 900;
 		}
 		
+		//TODO (Alex) Fix fullscreen
 //		if(Integer.parseInt(arg[0]) == 1) {
 //			config.fullscreen = true; 	//PLEASE DO NOT USE YET!!!!
 //		} else {

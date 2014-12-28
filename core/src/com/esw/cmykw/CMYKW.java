@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.esw.Meta;
 
 public class CMYKW extends ApplicationAdapter implements ApplicationListener, InputProcessor {
-	public static int SCREEN_WIDTH = 0; //TODO (Alex) Fix these constants!
+	public static int SCREEN_WIDTH = 0;
 	public static int SCREEN_HEIGHT = 0;
 
 	private SpriteBatch batch;
@@ -38,7 +38,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		debugMessage.setColor(Color.GREEN);
 		box = new Box(texture);
 		
-		box.setSize(box.getWidth()/2, box.getHeight()/2);
+		box.setSize(box.getWidth()/2, box.getHeight()/2); //TODO (Alex) set box size appropriate to screen dimensions
 		box.setOrigin(box.getHeight()/2, box.getHeight()/2);
 		box.setCenter(SCREEN_WIDTH/2,  SCREEN_HEIGHT/2);
 	}
