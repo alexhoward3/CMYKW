@@ -9,25 +9,34 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.esw.Meta;
 
 
 public class CMYKW extends ApplicationAdapter implements ApplicationListener, InputProcessor {
-	public static int SCREEN_WIDTH = 0;
-	public static int SCREEN_HEIGHT = 0;
+	public int SCREEN_WIDTH = 0;
+	public int SCREEN_HEIGHT = 0;
 
 	private SpriteBatch batch;
-	private Texture texture;
+	private ShapeRenderer sr;
+	
+	private Texture boxTexture;
 	private Box box;
+	private Texture gemTexture;
+	private Box gem;
+	
 	private BitmapFont debugMessage;
 	private String message = "Debug: ";
+	
 	private float deltaTime;
 	private float debugClock;
-	private Box[] gemArray = new Box[100];
-
+	
+	
 	public CMYKW(int w, int h) {
 		SCREEN_WIDTH = w;
 		SCREEN_HEIGHT = h;
@@ -35,57 +44,39 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 
 	@Override
 	public void create () {
-		Meta.println("CMYKW");
+		Meta.newline();
 		batch = new SpriteBatch();
-		texture = new Texture(Gdx.files.internal("images/testbox.png")); //Path is /android/assets/...
+		sr = new ShapeRenderer();
+		
 		debugMessage = new BitmapFont();
 		debugMessage.setColor(Color.GREEN);
-		box = new Box(texture);
 		
-		Texture cyanT = new Texture(Gdx.files.internal("images/cyan.png"));
-		Texture magentaT = new Texture(Gdx.files.internal("images/magenta.png"));
-		Texture yellowT = new Texture(Gdx.files.internal("images/yellow.png"));
-		Texture blackT = new Texture(Gdx.files.internal("images/black.png"));
-		Texture whiteT = new Texture(Gdx.files.internal("images/white.png"));
-
-		Box cyan = new Box(cyanT, "cyan");
-		Box magenta = new Box(magentaT, "magenta");
-		Box yellow = new Box(yellowT, "yellow");
-		Box black = new Box(blackT, "black");
-		Box white = new Box(whiteT, "white");
-		Box[] colors = new Box[5];
-		colors[0] = cyan;
-		colors[1] = magenta;
-		colors[2] = yellow;
-		colors[3] = black;
-		colors[4] = white;
+		boxTexture = new Texture(Gdx.files.internal("images/tronbox.png")); //Path is /android/assets/...
+		box = new Box(boxTexture);
+		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.2f), box.getWidth()-(SCREEN_HEIGHT * 0.2f)); //SCALING
+		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 		
-		for(int i = 0, rand = rand(5); i < gemArray.length; i++, rand = rand(5)) {
-			gemArray[i] = colors[rand];
-		}
+		Meta.println("Box X: " + box.getHeight());
+		Meta.println("Box Y: " + box.getWidth());
+		Meta.println("Box X * 0.2 = " + (box.getHeight()*0.2f));
+		Meta.println("Box Y * 0.2 = " + (box.getWidth()*0.2f));
 		
-		for(int i = 0; i < gemArray.length; i++) {
-			Meta.println(gemArray[i].color());
-		}
-
-		box.setSize(box.getWidth(), box.getHeight()); //TODO (Alex) set box size appropriate to screen dimensions
-		box.setCenter(SCREEN_WIDTH/2,  SCREEN_HEIGHT/2);
-		
-		
-		for(int i = 0, randX = rand(SCREEN_WIDTH-20, 20), randY = rand(SCREEN_HEIGHT-20, 20); i < gemArray.length; i++, 
-				randX = rand(SCREEN_WIDTH-20, 20), randY = rand(SCREEN_HEIGHT-20, 20)) {
-			Meta.println("X: " + randX);
-			Meta.println("Y: " + randY);
-			Meta.newline();
-			gemArray[i].setCenter(randX, randY);
+		gemTexture = new Texture(Gdx.files.internal("images/cyan.png"));
+		gem = new Box(gemTexture);
+		float[] boxvert = box.getVertices();
+		for(int i = 0; i < boxvert.length; i++) {
+			Meta.println("" + boxvert[i]);
 		}
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private int rand(int bound) {
 		return (int)(Math.random() * bound);
 	}
 	
+	
+	@SuppressWarnings("unused")
 	private int rand(int top, int bottom) {
 		return (int)(Math.random() * top + bottom);
 	}
@@ -93,7 +84,8 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	@Override
 	public void dispose() {
 		batch.dispose();
-		texture.dispose();
+		boxTexture.dispose();
+		gemTexture.dispose();
 	}
 
 	@Override
@@ -134,15 +126,23 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 			message = "Debug:"; //Resets the debug message
 			debugClock = 0; //Resets the debug clock
 		}
-
+		
+		//BEGIN BATCH
 		batch.begin();
 		box.draw(batch);
 		debugMessage.draw(batch, message, 10, 40);
-		for(int i = 0; i < gemArray.length; i++) {
-			gemArray[i].draw(batch);
-		}
 		batch.end();
-		//END DRAWING
+		//END BATCH
+		
+		//CALC CIRCLE POSITION BASED ON BOX //TODO (Alex) Circle testing!!!
+		
+		
+		//BEGIN SHAPERENDERREREHRUYEIUY
+		sr.begin(ShapeType.Filled);
+		sr.setColor(Color.RED);
+		sr.circle(100, 100, 10);
+		sr.end();
+		
 	}
 
 	@Override

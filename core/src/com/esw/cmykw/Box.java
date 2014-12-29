@@ -17,14 +17,14 @@ public class Box extends Sprite {
 	public Box() {
 		super();
 		rotation = super.getRotation();
-		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
+		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
 	public Box(Texture texture) {
 		super(texture);
 		this.texture = texture;
 		this.rotation = super.getRotation();
-		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
+		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
 	public Box(Texture texture, String color) {
@@ -32,13 +32,19 @@ public class Box extends Sprite {
 		this.texture = texture;
 		this.color = color;
 		this.rotation = super.getRotation();
-		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
+		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
+	}
+	
+	@Override
+	public void setSize(float width, float height) {
+		super.setSize(width, height);
+		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
 	public void rotateLeft(float degrees) {
 		isRotatingLeft = true;
 		isRotating = true;
-		rotate(degrees);
+		super.rotate(degrees);
 		rotation += degrees;
 		//Meta.println("Left rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
@@ -51,7 +57,7 @@ public class Box extends Sprite {
 	public void rotateRight(float degrees) {
 		isRotatingRight = true;
 		isRotating = true;
-		rotate(degrees);
+		super.rotate(degrees);
 		rotation += degrees;
 		//Meta.println("Right rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
