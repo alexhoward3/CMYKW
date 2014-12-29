@@ -21,6 +21,7 @@ public class DesktopLauncher {
 			System.exit(1);
 		}
 		
+		Meta.println("Args: " + arg.length);
 		for(int i = 0; i < arg.length; i++) {
 			Meta.println(arg[i]);
 		}

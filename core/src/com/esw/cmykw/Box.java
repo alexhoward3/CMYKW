@@ -2,52 +2,62 @@ package com.esw.cmykw;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.esw.Meta;
 
+@SuppressWarnings("unused")
 public class Box extends Sprite {
 	
 	private float rotation;
 	private boolean isRotating;
 	public boolean isRotatingRight;
 	public boolean isRotatingLeft;
+	private Texture texture;
+	private String color;
 	
 	public Box() {
 		super();
 		rotation = super.getRotation();
+		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
 	}
 	
 	public Box(Texture texture) {
 		super(texture);
-		rotation = super.getRotation();
+		this.texture = texture;
+		this.rotation = super.getRotation();
+		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
 	}
 	
-	@Override
-	public void rotate(float degrees) {
-		isRotating = true;
-		super.rotate(degrees);
-		rotation += degrees;
-		if(rotation >= 90 || rotation <= -90) {
-			resetRotation();
-			isRotating = false;
-		}
+	public Box(Texture texture, String color) {
+		super(texture);
+		this.texture = texture;
+		this.color = color;
+		this.rotation = super.getRotation();
+		this.setOrigin(this.getHeight()/2, this.getWidth()/2);
 	}
 	
 	public void rotateLeft(float degrees) {
 		isRotatingLeft = true;
-		this.rotate(degrees);
+		isRotating = true;
+		rotate(degrees);
 		rotation += degrees;
+		//Meta.println("Left rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
 			resetRotation(); 
 			isRotatingLeft = false;
+			isRotating = false;
 		}
 	}
 	
 	public void rotateRight(float degrees) {
 		isRotatingRight = true;
-		this.rotate(degrees);
+		isRotating = true;
+		rotate(degrees);
 		rotation += degrees;
+		//Meta.println("Right rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
 			resetRotation();
 			isRotatingRight = false;
+			isRotating = false;
 		}
 	}
 	
@@ -62,6 +72,14 @@ public class Box extends Sprite {
 	
 	public boolean isRotating() {
 		return isRotating;
+	}
+	
+	public void setColor(String s) {
+		color = s;
+	}
+	
+	public String color() {
+		return color;
 	}
 }
 
