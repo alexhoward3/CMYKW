@@ -27,12 +27,12 @@ public class DesktopLauncher {
 		}
 		
 		if(Integer.parseInt(arg[1]) == 1) {
-			config.vSyncEnabled = true; 	//Enable vertical sync
+			config.vSyncEnabled = true; //Enable vertical sync
 		} else {
 			config.vSyncEnabled = false;
 		}
 		
-		config.samples = Integer.parseInt(arg[2]); 			//(NOTE: Alex) MSAA settings /*MAY HAVE TO CHANGE*/
+		config.samples = Integer.parseInt(arg[2]); 	//(NOTE: Alex) MSAA settings /*MAY HAVE TO CHANGE*/
 		
 		config.x = -1; 					//Center window x
 		config.y= -1; 					//Center window y

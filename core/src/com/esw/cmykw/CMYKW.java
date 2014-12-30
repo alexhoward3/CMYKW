@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle;
 import com.esw.Meta;
 
 
@@ -24,19 +25,27 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 
 	private SpriteBatch batch;
 	private ShapeRenderer sr;
-	
+
 	private Texture boxTexture;
 	private Box box;
-	private Texture gemTexture;
-	private Box gem;
-	
+	private Texture cyanTexture;
+	private Texture magentaTexture;
+	private Texture yellowTexture;
+	private Texture blackTexture;
+	private Texture whiteTexture;
+	private Box[] gemArray;
+
 	private BitmapFont debugMessage;
 	private String message = "Debug: ";
-	
+
 	private float deltaTime;
 	private float debugClock;
-	
-	
+
+	Rectangle bounds;
+	float gemX;
+	float gemY;
+	boolean trigger = true;
+
 	public CMYKW(int w, int h) {
 		SCREEN_WIDTH = w;
 		SCREEN_HEIGHT = h;
@@ -47,35 +56,68 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		Meta.newline();
 		batch = new SpriteBatch();
 		sr = new ShapeRenderer();
-		
+
 		debugMessage = new BitmapFont();
 		debugMessage.setColor(Color.GREEN);
-		
+
 		boxTexture = new Texture(Gdx.files.internal("images/tronbox.png")); //Path is /android/assets/...
 		box = new Box(boxTexture);
-		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.2f), box.getWidth()-(SCREEN_HEIGHT * 0.2f)); //SCALING
+		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.2f), box.getWidth()-(SCREEN_HEIGHT * 0.2f)); //SCALING DO NOT USE YET
 		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+
+		cyanTexture = new Texture(Gdx.files.internal("images/cyan.png"));
+		magentaTexture = new Texture(Gdx.files.internal("images/magenta.png"));
+		yellowTexture = new Texture(Gdx.files.internal("images/yellow.png"));
+		blackTexture = new Texture(Gdx.files.internal("images/black.png"));
+		whiteTexture = new Texture(Gdx.files.internal("images/white.png"));
+		//TODO Create an array of colors for the textures
 		
-		Meta.println("Box X: " + box.getHeight());
-		Meta.println("Box Y: " + box.getWidth());
-		Meta.println("Box X * 0.2 = " + (box.getHeight()*0.2f));
-		Meta.println("Box Y * 0.2 = " + (box.getWidth()*0.2f));
+		gemArray = new Box[5];
 		
-		gemTexture = new Texture(Gdx.files.internal("images/cyan.png"));
-		gem = new Box(gemTexture);
-		float[] boxvert = box.getVertices();
-		for(int i = 0; i < boxvert.length; i++) {
-			Meta.println("" + boxvert[i]);
-		}
+		//TODO Place random colors from color array into the gem array
+		gemArray[0] = new Box(cyanTexture, 64f, 64f);
+		gemArray[1] = new Box(magentaTexture, 64f, 64f);
+		gemArray[2] = new Box(yellowTexture, 64f, 64f);
+		gemArray[3] = new Box(whiteTexture, 64f, 64f);
+		gemArray[4] = new Box(blackTexture, 64f, 64f);
 		
+		bounds = box.getBoundingRectangle(); //Gets the bounding rectangle of the box object
+		gemX = bounds.getX(); //Gets the x of the rectangle at the lower left corner
+		gemY = bounds.getY(); //Gets the y of the rectangle at the lower left corner
+		
+		//TODO (Alex) Create gem positioning algorithm
+		gemX = gemX + (box.getWidth() * 0.10f);
+		gemY = gemY + (box.getHeight() * 0.10f);
+		
+		gemArray[0].setCenter(gemX, gemY);
+		
+		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+		
+		gemArray[1].setCenter(gemX, gemY);
+		
+		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+		
+		gemArray[2].setCenter(gemX, gemY);
+		
+		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+		
+		gemArray[3].setCenter(gemX, gemY);
+		
+		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+		
+		gemArray[4].setCenter(gemX, gemY);
 	}
-	
+
 	@SuppressWarnings("unused")
 	private int rand(int bound) {
 		return (int)(Math.random() * bound);
 	}
-	
-	
+
+
 	@SuppressWarnings("unused")
 	private int rand(int top, int bottom) {
 		return (int)(Math.random() * top + bottom);
@@ -85,7 +127,11 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	public void dispose() {
 		batch.dispose();
 		boxTexture.dispose();
-		gemTexture.dispose();
+		cyanTexture.dispose();
+		magentaTexture.dispose();
+		yellowTexture.dispose();
+		blackTexture.dispose();
+		whiteTexture.dispose();
 	}
 
 	@Override
@@ -102,47 +148,60 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 
 		if(!box.isRotating()) { //Block input if the box is rotating
 			if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-				Meta.println("Debug: left key pressed");
 				message = "Debug: left key pressed";
 				//Meta.println("Rotating Left"); //CONSOLE DEBUG
 				box.isRotatingLeft = true;
+				for(int i = 0; i < gemArray.length; i++) {
+					gemArray[i].isRotatingLeft = true;
+				}
 				debugClock = 0;
 			} else if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-				Meta.println("Debug: right key pressed");
 				message = "Debug: right key pressed";
 				//Meta.println("Rotating Right"); //CONSOLE DEBUG
 				box.isRotatingRight = true;
+				for(int i = 0; i < gemArray.length; i++) {
+					gemArray[i].isRotatingRight = true;
+				}
 				debugClock = 0;
 			}
 		}
 
 		if(box.isRotatingLeft) { //Continue rotation (animate)
 			box.rotateLeft(10f); //This number must be -10f because reasons!
+			for(int i = 0; i < gemArray.length; i++) {
+				gemArray[i].rotateLeft(10f);
+			}
 		} else if(box.isRotatingRight) { //Continue rotation (animate)
 			box.rotateRight(-10f); //This number must be 10f because reasons!
+			for(int i = 0; i < gemArray.length; i++) {
+				gemArray[i].rotateRight(-10f);
+			}
 		}
 
 		if(debugClock >= 2) { //About 2 seconds
-			message = "Debug:"; //Resets the debug message
+			message = "Debug: "; //Resets the debug message
 			debugClock = 0; //Resets the debug clock
 		}
 		
 		//BEGIN BATCH
 		batch.begin();
 		box.draw(batch);
+		////TODO (Alex) THIS CODE IS TERRIBLE! PLEASE FIX MEEEEE!!!
+		gemArray[0].draw(batch);
+		gemArray[1].draw(batch);
+		gemArray[2].draw(batch);
+		gemArray[3].draw(batch);
+		gemArray[4].draw(batch);
 		debugMessage.draw(batch, message, 10, 40);
 		batch.end();
 		//END BATCH
 		
-		//CALC CIRCLE POSITION BASED ON BOX //TODO (Alex) Circle testing!!!
-		
-		
-		//BEGIN SHAPERENDERREREHRUYEIUY
-		sr.begin(ShapeType.Filled);
-		sr.setColor(Color.RED);
-		sr.circle(100, 100, 10);
-		sr.end();
-		
+		//BEGIN SHAPERENDERREREHRUYEIUY ///////PLS FOR DEER JESUS' SAKE ONLY USE FOR DEBUG!
+//		sr.begin(ShapeType.Filled);
+//		sr.setColor(Color.RED);
+//		sr.circle(circleX, circleY, 10);
+//		sr.end();
+
 	}
 
 	@Override

@@ -35,6 +35,14 @@ public class Box extends Sprite {
 		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
+	public Box(Texture texture, float width, float height) {
+		super(texture);
+		super.setSize(width, height);
+		this.texture = texture;
+		this.rotation = super.getRotation();
+		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
+	}
+	
 	@Override
 	public void setSize(float width, float height) {
 		super.setSize(width, height);
