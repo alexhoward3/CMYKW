@@ -4,21 +4,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.esw.Meta;
 
+/**
+ * 
+ * @author Alex
+ * A Box is always square
+ */
 @SuppressWarnings("unused")
 public class Box extends Sprite {
 	
-	private float rotation;
+	private float rotation, dimension;
 	private boolean isRotating;
-	public boolean isRotatingRight;
-	public boolean isRotatingLeft;
 	private Texture texture;
-	private String color;
 	
-	public Box() {
-		super();
-		rotation = super.getRotation();
-		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
-	}
+	public boolean rotateRight, rotateLeft;
 	
 	public Box(Texture texture) {
 		super(texture);
@@ -27,50 +25,51 @@ public class Box extends Sprite {
 		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
-	public Box(Texture texture, String color) {
+	public Box(Texture texture, float dimension) {
 		super(texture);
-		this.texture = texture;
-		this.color = color;
-		this.rotation = super.getRotation();
-		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
-	}
-	
-	public Box(Texture texture, float width, float height) {
-		super(texture);
-		super.setSize(width, height);
+		super.setSize(dimension, dimension);
 		this.texture = texture;
 		this.rotation = super.getRotation();
 		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
 	}
 	
-	@Override
-	public void setSize(float width, float height) {
-		super.setSize(width, height);
+	public void setSize(float dimension) {
+		super.setSize(dimension, dimension);
 		this.setOrigin(this.getWidth()/2, this.getHeight()/2);
+	}
+	
+	public float getSize() {
+		if(this.getHeight() != this.getWidth()) {
+			Meta.println("Something went seriously wrong!\n"
+					+ "Box dimensions are not the same: " + 
+					this.getHeight() + "x" + this.getHeight());
+			return 0.0f;
+		}
+		return dimension;
 	}
 	
 	public void rotateLeft(float degrees) {
-		isRotatingLeft = true;
+		rotateLeft = true;
 		isRotating = true;
 		super.rotate(degrees);
 		rotation += degrees;
 		//Meta.println("Left rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
 			resetRotation(); 
-			isRotatingLeft = false;
+			rotateLeft = false;
 			isRotating = false;
 		}
 	}
 	
 	public void rotateRight(float degrees) {
-		isRotatingRight = true;
+		rotateRight = true;
 		isRotating = true;
 		super.rotate(degrees);
 		rotation += degrees;
 		//Meta.println("Right rotation: " + rotation); //DEBUG
 		if(rotation >= 90 || rotation <= -90) {
 			resetRotation();
-			isRotatingRight = false;
+			rotateRight = false;
 			isRotating = false;
 		}
 	}
@@ -86,14 +85,6 @@ public class Box extends Sprite {
 	
 	public boolean isRotating() {
 		return isRotating;
-	}
-	
-	public void setColor(String s) {
-		color = s;
-	}
-	
-	public String color() {
-		return color;
 	}
 }
 

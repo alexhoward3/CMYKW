@@ -16,6 +16,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 import com.esw.Meta;
 
 
@@ -33,7 +34,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	private Texture yellowTexture;
 	private Texture blackTexture;
 	private Texture whiteTexture;
-	private Box[] gemArray;
+	//private Box[] gemArray; //TAG: WORKING CLASS CODE
 
 	private BitmapFont debugMessage;
 	private String message = "Debug: ";
@@ -60,7 +61,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		debugMessage = new BitmapFont();
 		debugMessage.setColor(Color.GREEN);
 
-		boxTexture = new Texture(Gdx.files.internal("images/tronbox.png")); //Path is /android/assets/...
+		boxTexture = new Texture(Gdx.files.internal("images/tronbox2.png")); //Path is /android/assets/...
 		box = new Box(boxTexture);
 		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.2f), box.getWidth()-(SCREEN_HEIGHT * 0.2f)); //SCALING DO NOT USE YET
 		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
@@ -72,44 +73,55 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		whiteTexture = new Texture(Gdx.files.internal("images/white.png"));
 		//TODO Create an array of colors for the textures
 		
-		gemArray = new Box[5];
-		
-		//TODO Place random colors from color array into the gem array
-		gemArray[0] = new Box(cyanTexture, 64f, 64f);
-		gemArray[1] = new Box(magentaTexture, 64f, 64f);
-		gemArray[2] = new Box(yellowTexture, 64f, 64f);
-		gemArray[3] = new Box(whiteTexture, 64f, 64f);
-		gemArray[4] = new Box(blackTexture, 64f, 64f);
-		
-		bounds = box.getBoundingRectangle(); //Gets the bounding rectangle of the box object
-		gemX = bounds.getX(); //Gets the x of the rectangle at the lower left corner
-		gemY = bounds.getY(); //Gets the y of the rectangle at the lower left corner
-		
-		//TODO (Alex) Create gem positioning algorithm
-		gemX = gemX + (box.getWidth() * 0.10f);
-		gemY = gemY + (box.getHeight() * 0.10f);
-		
-		gemArray[0].setCenter(gemX, gemY);
-		
-		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
-		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
-		
-		gemArray[1].setCenter(gemX, gemY);
-		
-		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
-		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
-		
-		gemArray[2].setCenter(gemX, gemY);
-		
-		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
-		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
-		
-		gemArray[3].setCenter(gemX, gemY);
-		
-		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
-		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
-		
-		gemArray[4].setCenter(gemX, gemY);
+
+		//TAG: WORKING CLASS CODE DO NOT DELETE YET
+		{
+			//		gemArray = new Box[5];
+			//		
+			//		//TODO Place random colors from color array into the gem array
+			//		float gemsize = 80f;
+			//		gemArray[0] = new Box(cyanTexture, gemsize, gemsize);
+			//		gemArray[1] = new Box(magentaTexture, gemsize, gemsize);
+			//		gemArray[2] = new Box(yellowTexture, gemsize, gemsize);
+			//		gemArray[3] = new Box(whiteTexture, gemsize, gemsize);
+			//		gemArray[4] = new Box(blackTexture, gemsize, gemsize);
+
+			//		bounds = box.getBoundingRectangle(); //Gets the bounding rectangle of the box object
+			//		gemX = bounds.getX(); //Gets the x of the rectangle at the lower left corner
+			//		gemY = bounds.getY(); //Gets the y of the rectangle at the lower left corner
+
+
+			//TODO (Alex) Create gem positioning algorithm
+			//		gemX = gemX + (box.getWidth() * 0.10f);
+			//		gemY = gemY + (box.getHeight() * 0.10f);
+			//		
+			//		gemArray[0].setCenter(gemX, gemY);
+			//		
+			//		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+			//		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+			//		
+			//		gemArray[1].setCenter(gemX, gemY);
+			//		
+			//		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+			//		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+			//		
+			//		gemArray[2].setCenter(gemX, gemY);
+			//		
+			//		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+			//		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+			//		
+			//		gemArray[3].setCenter(gemX, gemY);
+			//		
+			//		gemX = gemX + ((box.getWidth() * 0.10f) + (box.getWidth() * 0.10f));
+			//		gemY = gemY + ((box.getHeight() * 0.10f) + (box.getHeight() * 0.10f));
+			//		
+			//		gemArray[4].setCenter(gemX, gemY);
+			//		
+			//		Meta.println("" + box.getOriginX() + " " + box.getOriginY());
+			//		gemArray[0].setOrigin(box.getOriginX(), box.getOriginY());
+			//		gemArray[1].setOrigin(box.getOriginX(), box.getOriginY());
+			//		gemArray[4].setOrigin(-box.getOriginX(), -box.getOriginY());
+		}
 	}
 
 	@SuppressWarnings("unused")
@@ -150,57 +162,57 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 			if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
 				message = "Debug: left key pressed";
 				//Meta.println("Rotating Left"); //CONSOLE DEBUG
-				box.isRotatingLeft = true;
-				for(int i = 0; i < gemArray.length; i++) {
-					gemArray[i].isRotatingLeft = true;
-				}
+				box.rotateLeft = true;
+				//				for(int i = 0; i < gemArray.length; i++) { //TAG: WORKING CLASS CODE
+				//					gemArray[i].isRotatingLeft = true;
+				//				}
 				debugClock = 0;
 			} else if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
 				message = "Debug: right key pressed";
 				//Meta.println("Rotating Right"); //CONSOLE DEBUG
-				box.isRotatingRight = true;
-				for(int i = 0; i < gemArray.length; i++) {
-					gemArray[i].isRotatingRight = true;
-				}
+				box.rotateRight = true;
+				//				for(int i = 0; i < gemArray.length; i++) { //TAG: WORKING CLASS CODE
+				//					gemArray[i].isRotatingRight = true;
+				//				}
 				debugClock = 0;
 			}
 		}
 
-		if(box.isRotatingLeft) { //Continue rotation (animate)
+		if(box.rotateLeft) { //Continue rotation (animate)
 			box.rotateLeft(10f); //This number must be -10f because reasons!
-			for(int i = 0; i < gemArray.length; i++) {
-				gemArray[i].rotateLeft(10f);
-			}
-		} else if(box.isRotatingRight) { //Continue rotation (animate)
+			//			for(int i = 0; i < gemArray.length; i++) { //TAG: WORKING CLASS CODE
+			//				gemArray[i].rotateLeft(10f);
+			//			}
+		} else if(box.rotateRight) { //Continue rotation (animate)
 			box.rotateRight(-10f); //This number must be 10f because reasons!
-			for(int i = 0; i < gemArray.length; i++) {
-				gemArray[i].rotateRight(-10f);
-			}
+			//			for(int i = 0; i < gemArray.length; i++) { //TAG: WORKING CLASS CODE
+			//				gemArray[i].rotateRight(-10f);
+			//			}
 		}
 
 		if(debugClock >= 2) { //About 2 seconds
 			message = "Debug: "; //Resets the debug message
 			debugClock = 0; //Resets the debug clock
 		}
-		
+
 		//BEGIN BATCH
 		batch.begin();
 		box.draw(batch);
 		////TODO (Alex) THIS CODE IS TERRIBLE! PLEASE FIX MEEEEE!!!
-		gemArray[0].draw(batch);
-		gemArray[1].draw(batch);
-		gemArray[2].draw(batch);
-		gemArray[3].draw(batch);
-		gemArray[4].draw(batch);
+		//		gemArray[0].draw(batch); //TAG: WORKING CLASS CODE
+		//		gemArray[1].draw(batch);
+		//		gemArray[2].draw(batch);
+		//		gemArray[3].draw(batch);
+		//		gemArray[4].draw(batch);
 		debugMessage.draw(batch, message, 10, 40);
 		batch.end();
 		//END BATCH
-		
+
 		//BEGIN SHAPERENDERREREHRUYEIUY ///////PLS FOR DEER JESUS' SAKE ONLY USE FOR DEBUG!
-//		sr.begin(ShapeType.Filled);
-//		sr.setColor(Color.RED);
-//		sr.circle(circleX, circleY, 10);
-//		sr.end();
+		//		sr.begin(ShapeType.Filled);
+		//		sr.setColor(Color.RED);
+		//		sr.circle(circleX, circleY, 10);
+		//		sr.end();
 
 	}
 

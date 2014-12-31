@@ -21,10 +21,11 @@ public class DesktopLauncher {
 			System.exit(1);
 		}
 		
-		Meta.println("Args: " + arg.length);
+		Meta.print("Args: ");
 		for(int i = 0; i < arg.length; i++) {
-			Meta.println(arg[i]);
+			Meta.print("[" + arg[i] + "]" + " ");
 		}
+		Meta.newline();
 		
 		if(Integer.parseInt(arg[1]) == 1) {
 			config.vSyncEnabled = true; //Enable vertical sync
