@@ -22,27 +22,6 @@ public class Gem extends Sprite {
 		this.dimension = dimension;
 	}
 	
-	public Gem(Texture texture, float dimension, Board board) {
-		super(texture);
-		this.texture = texture;
-		this.board = board;
-		this.originX = board.getOriginX();
-		this.originY = board.getOriginX();
-		super.setSize(dimension, dimension);
-		this.dimension = dimension;
-	}
-	
-	public Gem(Texture texture, float dimension, Board board, String color) {
-		super(texture);
-		this.texture = texture;
-		this.board = board;
-		this.originX = board.getOriginX();
-		this.originY = board.getOriginX();
-		super.setSize(dimension, dimension);
-		this.dimension = dimension;
-		this.color = color;
-	}
-	
 	public void setBoard(Board board) {
 		this.board = board;
 	}

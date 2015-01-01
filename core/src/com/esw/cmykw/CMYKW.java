@@ -1,7 +1,5 @@
 package com.esw.cmykw;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationListener;
@@ -13,12 +11,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
 import com.esw.Meta;
 
 
@@ -26,8 +20,13 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	public int SCREEN_WIDTH = 0;
 	public int SCREEN_HEIGHT = 0;
 
+	private OrthographicCamera boxCamera;
+	private OrthographicCamera worldCamera;
+	private boolean rotatingRight, rotatingLeft;
+	private float rotation = 0;
+	private float ROT_CON = 10f;
+	
 	private SpriteBatch batch;
-	private ShapeRenderer sr;
 
 	private Texture boxTexture;
 	private Texture cyanTexture;
@@ -35,26 +34,18 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	private Texture yellowTexture;
 	private Texture blackTexture;
 	private Texture whiteTexture;
-	private Texture circleTexture;
 
-	private Board board;
-	private Sprite circles;
-	private Gem[] gemArray;
+	private Board box;
 	private Gem gem;
+	private GridSquare gemArray;
 
 	private BitmapFont debugMessage;
-	private String message = "Debug: ";
+	private String inputDebug = "Input debug: ";
+	private String timingDebug = "Timing debug: 0.0";
 
 	private float deltaTime;
-	private float debugClock;
-	private float period = 6f;
-	private float angle = 0;
-	private float radius = 5;
-
-	Rectangle bounds;
-	float gemX;
-	float gemY;
-	boolean trigger = true;
+	private float debugClearClock;
+	private float timingClock;
 
 	public CMYKW(int w, int h) {
 		SCREEN_WIDTH = w;
@@ -64,63 +55,47 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	@Override
 	public void create () {
 		Meta.newline();
+
 		batch = new SpriteBatch();
-		sr = new ShapeRenderer();
 
 		debugMessage = new BitmapFont();
 		debugMessage.setColor(Color.GREEN);
 
-		boxTexture = new Texture(Gdx.files.internal("images/tronbox3.png")); //Path is /android/assets/...
-		board = new Board(boxTexture, 500);
-		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.2f), box.getWidth()-(SCREEN_HEIGHT * 0.2f)); //TODO SCALING DO NOT USE YET
-		board.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+		boxTexture 		= new Texture(Gdx.files.internal("images/tronbox3.png"));
+		cyanTexture 	= new Texture(Gdx.files.internal("images/cyan.png"));
+		magentaTexture 	= new Texture(Gdx.files.internal("images/magenta.png"));
+		yellowTexture	= new Texture(Gdx.files.internal("images/yellow.png"));
+		blackTexture	= new Texture(Gdx.files.internal("images/black.png"));
+		whiteTexture	= new Texture(Gdx.files.internal("images/white.png"));
+
+		box = new Board(boxTexture);
+		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+		Rectangle bounds = box.getBoundingRectangle();
+		float x = bounds.getX();
+		float y = bounds.getY();
 		
-		circleTexture = new Texture(Gdx.files.internal("images/circles.png"));
-		circles = new Sprite(circleTexture);
-		circles.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-
-		bounds = board.getBoundingRectangle();
-		board.create(bounds);
-
-		cyanTexture = new Texture(Gdx.files.internal("images/cyan.png"));
-		magentaTexture = new Texture(Gdx.files.internal("images/magenta.png"));
-		yellowTexture = new Texture(Gdx.files.internal("images/yellow.png"));
-		blackTexture = new Texture(Gdx.files.internal("images/black.png"));
-		whiteTexture = new Texture(Gdx.files.internal("images/white.png"));
-
+		x = x + additive(1);
+		y = y + additive(3);
+		
 		gem = new Gem(cyanTexture, 60f);
-		float gemX;
-		float gemY;
+		gem.setCenter(x, y);
 		
-		gemX = bounds.getX();
-		gemY = bounds.getY();
+		boxCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
+		boxCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
+		boxCamera.update();
 		
-		gemX = gemX + (board.getWidth()*0.1f);
-		gemY = gemY + (board.getHeight()*0.1f);
-		gem.setCenter(gemX, gemY);
-
+		worldCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
+		worldCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
+		worldCamera.update();
 	}
-
-	@SuppressWarnings("unused")
-	private int rand(int bound) {
-		return (int)(Math.random() * bound);
+	
+	private float additive(int times) {
+		return ((box.getDimension() * 0.1f) * times);
 	}
-
-
-	@SuppressWarnings("unused")
-	private int rand(int top, int bottom) {
-		return (int)(Math.random() * top + bottom);
-	}
-
+	
 	@Override
 	public void dispose() {
 		batch.dispose();
-		boxTexture.dispose();
-		cyanTexture.dispose();
-		magentaTexture.dispose();
-		yellowTexture.dispose();
-		blackTexture.dispose();
-		whiteTexture.dispose();
 	}
 
 	@Override
@@ -128,61 +103,94 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		Gdx.gl.glClearColor(0.75f, 0.75f, 0.75f, 1f); //Set background to BLACK
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
-		debugClock += deltaTime;
-
+		debugClearClock += deltaTime;
+		
 		//Exit the application if the escape key is pressed
 		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
 			Gdx.app.exit(); //Kill dis
 		}
-		
-		
-		if(!board.isRotating()) { //Block input if the box is rotating
+
+		if(!rotatingLeft && !rotatingRight) {
 			if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-				message = "Debug: left key pressed";
-				board.rotatingLeft(true);
-				debugClock = 0;
+				inputDebug = "Input debug: left key pressed";
+				rotatingLeft = true;
+				debugClearClock = 0;
+				timingClock = 20;
+				timingDebug = "Timing debug: " + timingClock;
 			} else if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-				message = "Debug: right key pressed";
-				board.rotatingRight(true);
-				debugClock = 0;
+				inputDebug = "Input debug: right key pressed";
+				rotatingRight = true;
+				debugClearClock = 0;
+				timingClock = 20;
+				timingDebug = "Timing debug: " + timingClock;
 			}
 		}
+		timingClock--;
+		timingDebug = "Timing debug: " + timingClock;
 		
-		gem.setOrigin(board.getWidth(), board.getHeight());
-		if(board.isRotatingLeft()) { //Continue rotation (animate)
-			board.rotateLeft();
-			gem.rotate(10f);
-		} else if(board.isRotatingRight()) { //Continue rotation (animate)
-			board.rotateRight();
-			gem.rotate(-10f);
-		}
-
-		if(debugClock >= 2) { //About 2 seconds
-			message = "Debug: "; //Resets the debug message
-			debugClock = 0; //Resets the debug clock
+		//Times the rotation (sort of) //TODO fix timing
+		if(timingClock <= 0) {
+			timingClock = 0;
+			timingDebug = "Timing debug: " + timingClock;
 		}
 		
-		angle += 1f;
-		float x = (float)((bounds.getX()+board.getWidth()/2) + Math.sin(angle)*280);
-		float y = (float)((bounds.getY()+board.getHeight()/2) + Math.cos(angle)*280);
-		gem.setCenter(x, y);
-		Meta.println(""+ angle);
+		if(rotatingLeft) {
+			rotateLeft(boxCamera);
+		} else if(rotatingRight) {
+			rotateRight(boxCamera);
+		}
+		
+		if(!rotatingLeft && !rotatingRight) {
+			if(timingClock == 0)
+				timingDebug = "Timing debug: " + timingClock + " : DROP"; //TODO Drop code
+		}
 
-		//BEGIN BATCH
+		if(debugClearClock > 1) {
+			inputDebug = "Input debug: ";
+			debugClearClock = 0;
+		}
+		
+		worldCamera.update();
+		batch.setProjectionMatrix(worldCamera.combined);
+		//BEGIN BATCH FOR WORLD CAMERA
 		batch.begin();
-		board.draw(batch);
-		circles.draw(batch);
-		debugMessage.draw(batch, message, 10, 40);
+		debugMessage.setColor(Color.GREEN);
+		debugMessage.draw(batch, inputDebug, 10, 20);
+		debugMessage.setColor(Color.RED);
+		debugMessage.draw(batch, timingDebug, 10, 40);
+		batch.end();
+		//END BATCH
+
+		boxCamera.update();
+		batch.setProjectionMatrix(boxCamera.combined);
+		//BEGIN BATCH FOR BOX CAMERA
+		batch.begin();
+		box.draw(batch);
 		gem.draw(batch);
 		batch.end();
 		//END BATCH
 
-		//BEGIN SHAPERENDERREREHRUYEIUY ///////PLS FOR DEER JESUS' SAKE ONLY USE FOR DEBUG!
-		//		sr.begin(ShapeType.Filled);
-		//		sr.setColor(Color.RED);
-		//		sr.circle(circleX, circleY, 10);
-		//		sr.end();
 
+	}
+	
+	private void rotateLeft(OrthographicCamera camera) {
+		rotatingLeft = true;
+		camera.rotate(ROT_CON);
+		this.rotation += ROT_CON;
+		if(rotation >= 90 || rotation <= -90) {
+			rotation = 0;
+			rotatingLeft = false;
+		}
+	}
+
+	private void rotateRight(OrthographicCamera camera) {
+		rotatingRight = true;
+		camera.rotate(-ROT_CON);
+		rotation += ROT_CON;
+		if(rotation >= 90 || rotation <= -90) {
+			rotation = 0;
+			rotatingRight = false;
+		}
 	}
 
 	@Override
