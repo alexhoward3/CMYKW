@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.esw.Meta;
 
 
@@ -28,7 +27,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	private boolean rotatingRight, rotatingLeft;
 	private float rotation = 0;
 	private float ROT_CON = 10f;
-	
+
 	private SpriteBatch batch;
 
 	private Texture boxTexture;
@@ -39,12 +38,13 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 	private Texture whiteTexture;
 
 	private Sprite box;
-	private Sprite gem;
-	private Sprite[][] gemArray;
+	private GridSquare[][] gemArray;
 
 	private BitmapFont debugMessage;
 	private String inputDebug = "Input debug: ";
 	private String timingDebug = "Timing debug: 0.0";
+	private String fpsDebug = "FPS: ";
+	private boolean first = true;
 
 	private float deltaTime;
 	private float debugClearClock;
@@ -57,12 +57,8 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 
 	@Override
 	public void create () {
-		Meta.newline();
-
 		batch = new SpriteBatch();
-
 		debugMessage = new BitmapFont();
-		debugMessage.setColor(Color.GREEN);
 
 		boxTexture 		= new Texture(Gdx.files.internal("images/tronbox3.png"));
 		cyanTexture 	= new Texture(Gdx.files.internal("images/cyan.png"));
@@ -72,102 +68,55 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		whiteTexture	= new Texture(Gdx.files.internal("images/white.png"));
 
 		box = new Sprite(boxTexture);
+		//box.setSize(box.getHeight()-(SCREEN_HEIGHT * 0.1f), box.getWidth()-(SCREEN_HEIGHT * 0.1f));
 		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-		Rectangle bounds = box.getBoundingRectangle();
-		float xB = bounds.getX();
-		float yB = bounds.getY();
-		
-		xB = xB + additive(1);
-		yB = yB + additive(3);
-		
-		gem = new Sprite(cyanTexture);
-		gem.setSize(60f, 60f);
-		gem.setCenter(xB, yB);
-		
+		box.setOriginCenter();
+
+		float gemsize = (box.getWidth() * 0.14f);
 		Sprite[] colors = new Sprite[5];
 		colors[0] = new Sprite(cyanTexture);
-		colors[0].setSize(70f, 70f);
+		colors[0].setSize(gemsize, gemsize);
 		colors[1] = new Sprite(magentaTexture);
-		colors[1].setSize(70f, 70f);
+		colors[1].setSize(gemsize, gemsize);
 		colors[2] = new Sprite(yellowTexture);
-		colors[2].setSize(70f, 70f);
+		colors[2].setSize(gemsize, gemsize);
 		colors[3] = new Sprite(blackTexture);
-		colors[3].setSize(70f, 70f);
+		colors[3].setSize(gemsize, gemsize);
 		colors[4] = new Sprite(whiteTexture);
-		colors[4].setSize(70f, 70f);
-		
+		colors[4].setSize(gemsize, gemsize);
+
 		Random rand = new Random();
-		
-		gemArray = new Sprite[5][5];
+
+		gemArray = new GridSquare[5][5];
 		for(int x = 0; x < 5; x++) {
 			for(int y = 0; y < 5; y++) {
-				int r = rand.nextInt(5);
-				gemArray[x][y] = new Sprite(colors[r]);
-				gemArray[x][y].setOrigin(gemArray[x][y].getWidth()/2, gemArray[x][y].getHeight()/2);
+				int r = rand.nextInt(9);
+				if(r < 5){
+					gemArray[x][y] = new GridSquare(box, new Sprite(colors[r]), x, y);
+				} else {
+					gemArray[x][y] = new GridSquare(box, x, y);
+				}
 			}
 		}
-		positions();
-		
+
 		boxCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
 		boxCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
 		boxCamera.update();
-		
+
 		worldCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
 		worldCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
 		worldCamera.update();
 	}
-	
-	//Sets all of the positions for the gems
-	public void positions() {
-		for(int x = 0; x < 5; x++) {
-			float xpos = box.getBoundingRectangle().getX();
-			switch(x) {
-			case 0:
-				xpos = xpos + additive(1);
-				break;
-			case 1:
-				xpos = xpos + additive(3);
-				break;
-			case 2:
-				xpos = xpos + additive(5);
-				break;
-			case 3:
-				xpos = xpos + additive(7);
-				break;
-			case 4:
-				xpos = xpos + additive(9);
-				break;
-			}
-			for(int y = 0; y < 5; y++) {
-				float ypos = box.getBoundingRectangle().getY();
-				switch(y) {
-				case 0:
-					ypos = ypos + additive(1);
-					break;
-				case 1:
-					ypos = ypos + additive(3);
-					break;
-				case 2:
-					ypos = ypos + additive(5);
-					break;
-				case 3:
-					ypos = ypos + additive(7);
-					break;
-				case 4:
-					ypos = ypos + additive(9);
-				}
-				gemArray[x][y].setCenter(xpos, ypos);
-			}
-		}
-	}
-	
-	private float additive(int times) {
-		return ((box.getWidth() * 0.1f) * times);
-	}
-	
+
 	@Override
 	public void dispose() {
 		batch.dispose();
+		boxTexture.dispose();
+		cyanTexture.dispose();
+		magentaTexture.dispose();
+		yellowTexture.dispose();
+		blackTexture.dispose();
+		whiteTexture.dispose();
 	}
 
 	@Override
@@ -176,11 +125,17 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		deltaTime = Gdx.graphics.getDeltaTime();
 		debugClearClock += deltaTime;
-		
+
 		//Exit the application if the escape key is pressed
 		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
 			inputDebug = "Bye bye!";
 			Gdx.app.exit(); //Kill dis
+		}
+
+		//Reroll!
+		if(Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+			dispose();
+			create();
 		}
 
 		if(!rotatingLeft && !rotatingRight) {
@@ -198,19 +153,19 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 				timingDebug = "Timing debug: " + timingClock;
 			}
 		}
-		
+
 		if(rotatingLeft) {
-			rotateLeft(boxCamera);
+			rotateLeft(boxCamera, gemArray);
 		} else if(rotatingRight) {
-			rotateRight(boxCamera);
+			rotateRight(boxCamera, gemArray);
 		}
-		
-		if(!rotatingLeft && !rotatingRight) {
+
+		if(!first && !rotatingLeft && !rotatingRight) {
 			timingClock--;
 			timingDebug = "Timing debug: " + timingClock;
 			if(timingClock <= 0) {
 				timingClock = 0;
-				timingDebug = "Timing debug: " + timingClock + " : DROP"; //TODO Drop code
+				timingDebug = "Timing debug: " + timingClock + " : DROP"; //FIXME Drop code
 			}
 		}
 
@@ -218,7 +173,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 			inputDebug = "Input debug: ";
 			debugClearClock = 0;
 		}
-		
+
 		worldCamera.update();
 		batch.setProjectionMatrix(worldCamera.combined);
 		//BEGIN BATCH FOR WORLD CAMERA
@@ -227,6 +182,8 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		debugMessage.draw(batch, inputDebug, 10, 20);
 		debugMessage.setColor(Color.RED);
 		debugMessage.draw(batch, timingDebug, 10, 40);
+		debugMessage.setColor(Color.YELLOW);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), SCREEN_WIDTH-100, 20);
 		batch.end();
 		//END BATCH
 
@@ -235,19 +192,20 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		//BEGIN BATCH FOR BOX CAMERA
 		batch.begin();
 		box.draw(batch);
-		//gem.draw(batch); //Testing sprite
 		for(int x = 0; x < 5; x++) {
 			for(int y = 0; y < 5; y++) {
-				gemArray[x][y].draw(batch);
+				if(gemArray[x][y].isOccupied()){
+					gemArray[x][y].getGem().draw(batch);
+				}
 			}
 		}
 		batch.end();
 		//END BATCH
-
+		first = false;
 
 	}
-	
-	private void rotateLeft(OrthographicCamera camera) {
+
+	private void rotateLeft(OrthographicCamera camera, GridSquare[][] array) {
 		rotatingLeft = true;
 		camera.rotate(ROT_CON);
 		this.rotation += ROT_CON;
@@ -255,9 +213,19 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 			rotation = 0;
 			rotatingLeft = false;
 		}
+		int n = array.length;
+		for(int x = 0; x < n/2; x++) {
+			for(int y = 0; y < n-x-1; y++) {
+				GridSquare tmp = array[x][y];
+				array[x][y] = array[y][n-x-1];
+				array[y][n-x-1] = array[n-x-1][n-y-1];
+				array[n-x-1][n-y-1] = array[n-y-1][x];
+				array[n-y-1][x] = tmp;
+			}
+		}
 	}
 
-	private void rotateRight(OrthographicCamera camera) {
+	private void rotateRight(OrthographicCamera camera, GridSquare[][] array) {
 		rotatingRight = true;
 		camera.rotate(-ROT_CON);
 		rotation += ROT_CON;
@@ -265,24 +233,34 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 			rotation = 0;
 			rotatingRight = false;
 		}
+		int n = array.length;
+		for(int x = 0; x < n/2; x++) {
+			for(int y = 0; y < n-x-1; y++) {
+				GridSquare tmp = array[x][y];
+				array[x][y] = array[n-y-1][x];
+				array[n-y-1][x] = array[n-x-1][n-y-1];
+				array[n-x-1][n-y-1] = array[y][n-x-1];
+				array[y][n-x-1] = tmp;
+			}
+		}
 	}
 
 	@Override
 	public void resize(int width, int height) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void pause() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void resume() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

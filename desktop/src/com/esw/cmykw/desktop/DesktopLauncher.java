@@ -82,5 +82,6 @@ public class DesktopLauncher {
 		
 		config.title = "CMYKW"; 		//Title
 		new LwjglApplication(new CMYKW(config.width, config.height), config);
+		Meta.newline();
 	}
 }
