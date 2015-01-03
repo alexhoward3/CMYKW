@@ -15,6 +15,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.esw.Meta;
 
 
@@ -39,6 +46,10 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 
 	private Sprite box;
 	private GridSquare[][] gemArray;
+	
+	World world;
+	Body body;
+	Sprite sprite;
 
 	private BitmapFont debugMessage;
 	private String inputDebug = "Input debug: ";
@@ -98,6 +109,30 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 				}
 			}
 		}
+		
+		/* TESTING CODE */
+		sprite = new Sprite(cyanTexture);
+		sprite.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+		
+		world = new World(new Vector2(0, -98f), true);
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.position.set(sprite.getX(), sprite.getY());
+		
+		body = world.createBody(bodyDef);
+		
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(sprite.getWidth()/2, sprite.getHeight()/2);
+		
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.density = 1f;
+		
+		Fixture fixture = body.createFixture(fixtureDef);
+		
+		shape.dispose();
+		
+		/* TESTING CODE */
 
 		boxCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
 		boxCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
@@ -117,6 +152,7 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		yellowTexture.dispose();
 		blackTexture.dispose();
 		whiteTexture.dispose();
+		world.dispose();
 	}
 
 	@Override
@@ -186,19 +222,24 @@ public class CMYKW extends ApplicationAdapter implements ApplicationListener, In
 		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), SCREEN_WIDTH-100, 20);
 		batch.end();
 		//END BATCH
-
+		
+		world.step(1f/60f, 8, 3);
+		
+		sprite.setPosition(body.getPosition().x, body.getPosition().y);
+		
 		boxCamera.update();
 		batch.setProjectionMatrix(boxCamera.combined);
 		//BEGIN BATCH FOR BOX CAMERA
 		batch.begin();
-		box.draw(batch);
-		for(int x = 0; x < 5; x++) {
-			for(int y = 0; y < 5; y++) {
-				if(gemArray[x][y].isOccupied()){
-					gemArray[x][y].getGem().draw(batch);
-				}
-			}
-		}
+//		box.draw(batch);
+//		for(int x = 0; x < 5; x++) {
+//			for(int y = 0; y < 5; y++) {
+//				if(gemArray[x][y].isOccupied()){
+//					gemArray[x][y].getGem().draw(batch);
+//				}
+//			}
+//		}
+		batch.draw(sprite, sprite.getX(), sprite.getY());
 		batch.end();
 		//END BATCH
 		first = false;
