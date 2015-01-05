@@ -1,8 +1,5 @@
 package com.esw.cmykw;
 
-import java.util.Random;
-
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.esw.Meta;
@@ -12,64 +9,47 @@ public class Gem extends Sprite {
 	String color;
 	
 	public Gem() {
-		super();
-		super.setTexture(setRandomTexture());
+		this.color = "null";
 	}
 
 	public Gem(Texture texture) {
 		super(texture);
+		this.color = "";
+	}
+	
+	public Gem(Texture texture, float size) {
+		super(texture);
+		super.setSize(size, size);
+		this.color = "";
 	}
 
-	public Gem(Texture texture, String color) {
+	public Gem(Texture texture, float size, String color) {
+		super(texture);
+		this.setSize(size, size);
 		this.color = color;
+	}
+	
+	public Gem(Texture texture, float size, int color) {
+		super(texture);
+		this.setSize(size, size);
+		if(color == 0) {
+			this.color = "cyan";
+		} else if(color == 1) {
+			this.color = "magenta";
+		} else if(color == 2) {
+			this.color = "yellow";
+		} else if(color == 3) {
+			this.color = "black";
+		} else if(color ==4) {
+			this.color = "white";
+		} else {
+			this.color = "WTF";
+		}
+		Meta.println(this.color);
 	}
 
 	public void setColor(String color) {
 		this.color = color;
-	}
-
-	private Texture setRandomTexture() {
-		Random random = new Random();
-		int color = random.nextInt(5);
-		Texture texture;
-		
-		switch(color) {
-			case 0:	{
-				texture = new Texture(Gdx.files.internal("images/cyan.png"));
-				this.setTexture(texture);
-				this.color = "cyan";
-				return texture;
-			}
-			case 1: {
-				texture = new Texture(Gdx.files.internal("images/magenta.png"));
-				this.setTexture(texture);
-				this.color = "magenta";
-				return texture;
-			}
-			case 2: {
-				texture = new Texture(Gdx.files.internal("images/yellow.png"));
-				this.setTexture(texture);
-				this.color = "yellow";
-				return texture;
-			}
-			case 3: {
-				texture = new Texture(Gdx.files.internal("images/black.png"));
-				this.setTexture(texture);
-				this.color = "black";
-				return texture;
-			}
-			case 4: {
-				texture = new Texture(Gdx.files.internal("images/white.png"));
-				this.setTexture(texture);
-				this.color = "white";
-				return texture;
-			}
-			default: {
-				Meta.println("Could not create a random color! Something broke horribly!");
-				this.color = null;
-				return null;
-			}
-		}
 	}
 
 	@Override
