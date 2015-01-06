@@ -1,73 +1,83 @@
 package com.esw.cmykw;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.esw.Meta;
 
 public class Gem extends Sprite {
 
 	String color;
+	boolean isNull;
 	
 	public Gem() {
 		this.color = "null";
-	}
-
-	public Gem(Texture texture) {
-		super(texture);
-		this.color = "";
+		this.isNull = true;
 	}
 	
-	public Gem(Texture texture, float size) {
-		super(texture);
-		super.setSize(size, size);
-		this.color = "";
-	}
-
-	public Gem(Texture texture, float size, String color) {
-		super(texture);
-		this.setSize(size, size);
+	public Gem(String color, int x, int y) {
 		this.color = color;
+		this.isNull = false;
+		this.setCenter(x, y);
 	}
 	
-	public Gem(Texture texture, float size, int color) {
-		super(texture);
-		this.setSize(size, size);
-		if(color == 0) {
-			this.color = "cyan";
-		} else if(color == 1) {
-			this.color = "magenta";
-		} else if(color == 2) {
-			this.color = "yellow";
-		} else if(color == 3) {
-			this.color = "black";
-		} else if(color ==4) {
-			this.color = "white";
-		} else {
-			this.color = "WTF";
+	public Gem(int color) {
+		switch(color) {
+			case 0:
+				this.color = "cyan";
+				break;
+			case 1:
+				this.color = "magenta";
+				break;
+			case 2: 
+				this.color = "yellow";
+				break;
+			case 3:
+				this.color = "black";
+				break;
+			case 4:
+				this.color = "white";
+				break;
+			default: 
+				this.color = "WTF";
 		}
 		Meta.println(this.color);
+		this.isNull = false;
 	}
 
 	public void setColor(String color) {
 		this.color = color;
+		this.isNull = false;
 	}
 
 	@Override
 	public String toString() {
 		switch(color) {
 			case "cyan":
-				return "[C]";
+				return "C";
 			case "magenta":
-				return "[M]";
+				return "M";
 			case "yellow":
-				return "[Y]";
+				return "Y";
 			case "black":
-				return "[K]";
+				return "K";
 			case "white":
-				return "[W]";
+				return "W";
 			default: 
-				return "[0]";
+				return "0";
 		}
+	}
+	
+	public boolean isNull() {
+		return isNull;
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
