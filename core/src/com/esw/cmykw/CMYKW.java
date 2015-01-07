@@ -1,14 +1,12 @@
 package com.esw.cmykw;
 
-import java.util.Random;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,12 +16,17 @@ InputProcessor {
 	public int SCREEN_WIDTH = 0;
 	public int SCREEN_HEIGHT = 0;
 	
+	boolean rotatingLeft, rotatingRight;
+	float rotation;
+	final float ROT_CON = 10f;
+	
+	OrthographicCamera worldCamera;
+	OrthographicCamera gameCamera;
+
 	SpriteBatch batch;
-	
-	Array gemArray;
-	
-	Sprite[][] spriteArray;
 	Sprite box;
+	Sprite cards;
+	Grid grid;
 
 	public CMYKW(int w, int h) {
 		SCREEN_WIDTH = w;
@@ -33,45 +36,26 @@ InputProcessor {
 	@Override
 	public void create() {
 		
+		worldCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
+		worldCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
+		worldCamera.update();
+		
+		gameCamera = new OrthographicCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
+		gameCamera.position.set(SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0);
+		gameCamera.update();
+		
 		batch = new SpriteBatch();
-		
-		gemArray = new Array();
-		gemArray.printArray("Start");
-		gemArray.printPosArray();
-		
-		FileHandle[] colors = new FileHandle[5];
-		colors[0] = Gdx.files.internal("images/cyan.png");
-		colors[1] = Gdx.files.internal("images/magenta.png");
-		colors[2] = Gdx.files.internal("images/yellow.png");
-		colors[3] = Gdx.files.internal("images/black.png");
-		colors[4] = Gdx.files.internal("images/white.png");
-		
-		Random rand = new Random();
-		
-		box = new Sprite(new Texture(Gdx.files.internal("images/tronbox6.png")));
+
+		box = new Sprite(new Texture(Gdx.files.internal("images/positionbox.png")));
 		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-		float boxPosX = box.getBoundingRectangle().getX();
-		float boxPosY = box.getBoundingRectangle().getY();
 		
-		spriteArray = new Sprite[5][5];
+		cards = new Sprite(new Texture(Gdx.files.internal("images/cards.png")));
+		cards.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 		
-		float gemsize = 25f;
+		grid = new Grid(box);
 		
-		Sprite gem00 = new Sprite(new Texture(colors[rand.nextInt(5)]));
-		gem00.setSize(gemsize, gemsize);
-		float x0 = boxPosX + additive(box, 1);
-		float y0 = boxPosY + additive(box, 1);
-		gem00.setCenter(x0, y0);
-		spriteArray[0][0] = gem00;
-		
-		Sprite gem01 = new Sprite(new Texture(colors[rand.nextInt(5)]));
-		gem01.setSize(gemsize, gemsize);
-		float y1 = boxPosY + additive(box, 3);
-		gem01.setCenter(x0, y1);
-		spriteArray[0][1] = gem01;
-		
-		
-		
+		grid.printGrid("Start");
+
 	}
 
 	@Override
@@ -81,23 +65,38 @@ InputProcessor {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClearColor(0.75f, 0.75f, 0.75f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-		handleInput();
+		if(rotatingLeft && !rotatingRight) {
+			rotatingLeft = true;
+			rotateCameraLeft();
+		} else if(rotatingRight && !rotatingLeft) {
+			rotatingRight = true;
+			rotateCameraRight();
+		}
+		
+		//WORLD CAMERA
+		worldCamera.update();
+		batch.setProjectionMatrix(worldCamera.combined);
+		batch.begin();
+		//TODO Draw debug strings
+		batch.end();
+		
+		//GAME CAMERA
+		gameCamera.update();
+		batch.setProjectionMatrix(gameCamera.combined);
 		
 		batch.begin();
 		box.draw(batch);
-		
-		for(int x = 0; x < 5; x++) {
-			for(int y = 0; y < 5; y++) {
-				if(!gemArray.getGem(x, y).isNull)
-					gemArray.getGem(x, y).draw(batch);;
-			}
-		}
+		grid.draw(batch);
+		cards.draw(batch);
 		batch.end();
+		
+		if(!rotatingLeft && !rotatingRight) 
+			handleInput();
 	}
-	
+
 	public float additive(Sprite box, int times) {
 		return ((box.getWidth() * 0.1f) * times);
 	}
@@ -108,14 +107,34 @@ InputProcessor {
 			Gdx.app.exit(); // Kill dis
 		}
 		if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-			gemArray.rotateLeft();
-			gemArray.printArray("Rotate Left");
+			grid.rotateLeft();
+			rotatingLeft = true;
+			grid.printGrid("Rot L");
 		} else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-			gemArray.rotateRight();
-			gemArray.printArray("Rotate Right");
+			grid.rotateRight();
+			rotatingRight = true;
+			grid.printGrid("Rot R");
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-			//gemArray.drop();
-			gemArray.printArray("Drop");
+			grid.drop();
+			grid.printGrid("Drops");
+		}
+	}
+	
+	private void rotateCameraLeft() {
+		gameCamera.rotate(ROT_CON);
+		this.rotation += ROT_CON;
+		if (rotation >= 90 || rotation <= -90) {
+			rotation = 0;
+			rotatingLeft = false;
+		}
+	}
+	
+	private void rotateCameraRight() {
+		gameCamera.rotate(-ROT_CON);
+		rotation += ROT_CON;
+		if (rotation >= 90 || rotation <= -90) {
+			rotation = 0;
+			rotatingRight = false;
 		}
 	}
 
@@ -167,6 +186,42 @@ InputProcessor {
 		return false;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

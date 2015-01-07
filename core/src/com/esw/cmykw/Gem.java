@@ -1,56 +1,44 @@
 package com.esw.cmykw;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.esw.Meta;
 
 public class Gem extends Sprite {
+	private boolean isNull;
+	ColorPair colorPair;
+	float size, x, y;
 
-	String color;
-	boolean isNull;
-	
-	public Gem() {
-		this.color = "null";
-		this.isNull = true;
-	}
-	
-	public Gem(String color, int x, int y) {
-		this.color = color;
-		this.isNull = false;
-		this.setCenter(x, y);
-	}
-	
-	public Gem(int color) {
-		switch(color) {
-			case 0:
-				this.color = "cyan";
-				break;
-			case 1:
-				this.color = "magenta";
-				break;
-			case 2: 
-				this.color = "yellow";
-				break;
-			case 3:
-				this.color = "black";
-				break;
-			case 4:
-				this.color = "white";
-				break;
-			default: 
-				this.color = "WTF";
-		}
-		Meta.println(this.color);
-		this.isNull = false;
+	Gem() {
+		isNull = true;
+		colorPair = new ColorPair("0", null);
 	}
 
-	public void setColor(String color) {
-		this.color = color;
+	Gem(ColorPair colorPair, float size, float x, float y) {
 		this.isNull = false;
+		this.colorPair = colorPair;
+		this.size = size;
+		this.x = x;
+		this.y = y;
+		Sprite sprite = new Sprite(colorPair.texture);
+		super.set(sprite);
+		super.setSize(size, size);
+		super.setCenter(x, y);
+	}
+	
+	Gem(Gem gem, float x, float y) {
+		this(gem.colorPair, gem.size, x, y);
+	}
+
+	public void setNull(boolean b) {
+		this.isNull = b;
+	}
+
+	public boolean isNull() {
+		return isNull;
 	}
 
 	@Override
 	public String toString() {
-		switch(color) {
+		switch(colorPair.string) {
 			case "cyan":
 				return "C";
 			case "magenta":
@@ -58,26 +46,11 @@ public class Gem extends Sprite {
 			case "yellow":
 				return "Y";
 			case "black":
-				return "K";
+				return "B";
 			case "white":
 				return "W";
-			default: 
+			default:
 				return "0";
 		}
 	}
-	
-	public boolean isNull() {
-		return isNull;
-	}
-
 }
-
-
-
-
-
-
-
-
-
-
