@@ -6,7 +6,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.esw.Meta;
 
 public class Grid {
@@ -18,7 +17,7 @@ public class Grid {
 		array = new Gem[5][5];
 		this.box = box;
 		dir = new Direction();
-		
+
 		ColorPair[] colors = new ColorPair[5];
 		colors[0] = new ColorPair("cyan", new Texture(Gdx.files.internal("images/cyan.png")));
 		colors[1] = new ColorPair("magenta", new Texture(Gdx.files.internal("images/magenta.png")));
@@ -28,10 +27,10 @@ public class Grid {
 
 		Random rand = new Random();
 
-		for(int x = 0; x < array.length; x++) {
-			for(int y = 0; y < array[x].length; y++) {
-				float xpos = getCenterX(y); //These need to be switched in order for the gems to print correctly
-				float ypos = getCenterY(x); //These need to be switched in order for the gems to print correctly
+		for(int y = 0; y < array.length; y++) {
+			for(int x = 0; x < array[y].length; x++) {
+				float xpos = getCenterX(x); //These need to be switched in order for the gems to print correctly
+				float ypos = getCenterY(y); //These need to be switched in order for the gems to print correctly
 				int r = rand.nextInt(2);
 				if(r == 0)
 					array[x][y] = new Gem(colors[rand.nextInt(5)], 25f, xpos, ypos);
@@ -92,63 +91,138 @@ public class Grid {
 	}
 
 	public void drop() {
+		drop(dir);
+	}
+
+	private void drop(Direction direction) {
 		boolean mark = true;
+		String dir = direction.getDirection();
 		do {
-			for(int x = 1; x < array.length; x++) {
-				for(int y = 0; y < array[x].length; y++) {
-					if(!array[x][y].isNull()) {
-						if(array[x-1][y].isNull()) {
-							array[x-1][y] = new Gem(array[x][y], x, y);
-							array[x][y] = new Gem();
-							mark = true;
-						} else {
-							mark = false;
-						}
-					}
-				}
+			if(dir.equals("s")) {
+				mark = headSouth();
+			} else if(dir.equals("e")) {
+				mark = headEast();
+			} else if(dir.equals("n")) {
+				mark = headNorth();
+			} else if(dir.equals("w")) {
+				mark = headWest();
 			}
 		} while(mark);
 	}
 
-	// NOTE This code is actually backwards because of the fact that the origin is
-	// in the bottom left instead of the top left
-	// To use this function "normally" it should be rotateRight() [clockwise]
-	public void rotateLeft() {
-		dir.rotateLeft();
-		int n = array.length;
-		for (int i = 0; i < n / 2; i++) {
-			for (int j = i; j < n - i - 1; j++) {
-				Gem tmp = array[i][j];
-				array[i][j] = array[n - j - 1][i];
-				array[n - j - 1][i] = array[n - i - 1][n - j - 1];
-				array[n - i - 1][n - j - 1] = array[j][n - i - 1];
-				array[j][n - i - 1] = tmp;
+
+	public boolean headSouth() {
+		boolean mark = true;
+		for(int y = 1; y < array.length; y++) {
+			for(int x = 0; x < array[y].length; x++) {
+				if(!array[x][y].isNull()) {
+					if(array[x][y-1].isNull()) {
+						array[x][y-1] = new Gem(array[x][y], getCenterX(x), getCenterY(y-1));
+						array[x][y] = new Gem();
+						mark = true;
+					} else {
+						mark = false;
+					}
+				}
 			}
 		}
+		
+		//TODO! Check the columns!!! 
+		return mark;
 	}
 
-	// NOTE This code is actually backwards because of the fact that the origin is
-	// in the bottom left instead of the top left
-	// To use this function "normally" it should be rotateLeft() [counterclockwise]
-	public void rotateRight() {
-		dir.rotateRight();
-		int n = array.length;
-		for (int i = 0; i < n / 2; i++) {
-			for (int j = i; j < n - i - 1; j++) {
-				Gem tmp = array[i][j];
-				array[i][j] = array[j][n - i - 1];
-				array[j][n - i - 1] = array[n - i - 1][n - j - 1];
-				array[n - i - 1][n - j - 1] = array[n - j - 1][i];
-				array[n - j - 1][i] = tmp;
+	public boolean headEast() {
+		boolean mark = true;
+		for(int y = 0; y < array.length; y++) {
+			for(int x = array[y].length-2; x >= 0; x--) {
+				if(!array[x][y].isNull()) {
+					if(array[x+1][y].isNull()) {
+						array[x+1][y] = new Gem(array[x][y], getCenterX(x+1), getCenterY(y));
+						array[x][y] = new Gem();
+						mark = true;
+					} else {
+						mark = false;
+					}
+				}
 			}
 		}
+		//TODO Check the columns!!!
+		return mark;
+	}
+
+	public boolean headNorth() {
+		boolean mark = true;
+		for(int y = array.length-1; y >= 0; y--) {
+			for(int x = array[y].length-1; x >= 0; x--) {
+				if(!array[x][y].isNull()) {
+					if(array[x][y+1].isNull()) {
+						array[x][y+1] = new Gem(array[x][y], getCenterX(x), getCenterY(y+1));
+						array[x][y] = new Gem();
+						mark = true;
+					} else {
+						mark = false;
+					}
+				}
+			}
+		}
+		//TODO Check the columns!!!
+		return mark;
+	}
+
+	public boolean headWest() {
+		boolean mark = true;
+		for(int y = 0; y < array.length; y++) {
+			for(int x = 1; x < array[y].length; x++) {
+				if(!array[x][y].isNull()) {
+					if(array[x-1][y].isNull()) {
+						array[x-1][y] = new Gem(array[x][y], getCenterX(x-1), getCenterY(y));
+						array[x][y] = new Gem();
+						mark = true;
+					} else {
+						mark = false;
+					}
+				}
+			}
+		}
+		//TODO Check the columns!!!
+		return mark;
+	}
+
+	// NOTE THE ARRAY TRANSFORMATION CODE IS UNNECESSARY!!!
+	public void rotateLeft() {
+		dir.rotateRight();
+//		int n = array.length;
+//		for (int i = 0; i < n / 2; i++) {
+//			for (int j = i; j < n - i - 1; j++) {
+//				Gem tmp = array[i][j];
+//				array[i][j] = array[j][n - i - 1];
+//				array[j][n - i - 1] = array[n - i - 1][n - j - 1];
+//				array[n - i - 1][n - j - 1] = array[n - j - 1][i];
+//				array[n - j - 1][i] = tmp;
+//			}
+//		}
+	}
+	
+	// NOTE THE ARRAY TRANSFORMATION CODE IS UNNECESSARY!!!
+	public void rotateRight() {
+		dir.rotateLeft();
+//		int n = array.length;
+//		for (int i = 0; i < n / 2; i++) {
+//			for (int j = i; j < n - i - 1; j++) {
+//				Gem tmp = array[i][j];
+//				array[i][j] = array[n - j - 1][i];
+//				array[n - j - 1][i] = array[n - i - 1][n - j - 1];
+//				array[n - i - 1][n - j - 1] = array[j][n - i - 1];
+//				array[j][n - i - 1] = tmp;
+//			}
+//		}
 	}
 
 	public void printGrid(String s) {
 		Meta.println("DIR: " + dir.getDirection());
 		Meta.println("-------------- " + s + " ---------------");
-		for(int x = array.length-1; x >= 0 ; x--) {
-			for(int y = 0; y < array[x].length; y++) {
+		for(int y = array.length-1; y >= 0 ; y--) {
+			for(int x = 0; x < array[y].length; x++) {
 				Meta.print("[" + array[x][y].toString() + " " +  x + "," + y + "]");
 			}
 			Meta.newline();
@@ -186,48 +260,6 @@ public class Grid {
 					array[x][y].draw(batch);
 			}
 		}
-	}
-}
-
-class Direction {
-	String[] dir;
-	static int counter;
-	
-	Direction() {
-		counter = 0;
-		dir = new String[4];
-		dir[0] = "s";
-		dir[1] = "e";
-		dir[2] = "n";
-		dir[3] = "w";
-	}
-	
-	String getDirection() {
-		return dir[counter];
-	}
-	
-	void rotateLeft() {
-		if(counter == 0)
-			counter = 3;
-		else
-			counter--;
-	}
-	
-	void rotateRight() {
-		if(counter == 3)
-			counter = 0;
-		else
-			counter++;
-	}
-	
-}
-
-class Point {
-	float x, y;
-	Rectangle box;
-	
-	Point() {
-		//FIXME GRID SQUARES
 	}
 }
 

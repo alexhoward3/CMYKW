@@ -117,6 +117,18 @@ InputProcessor {
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
 			grid.drop();
 			grid.printGrid("Drops");
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+			grid.headNorth();
+			grid.printGrid("North");
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+			grid.headWest();
+			grid.printGrid("West");
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+			grid.headSouth();
+			grid.printGrid("South");
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+			grid.headEast();
+			grid.printGrid("East");
 		}
 	}
 	
