@@ -5,9 +5,11 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -22,11 +24,22 @@ InputProcessor {
 	
 	OrthographicCamera worldCamera;
 	OrthographicCamera gameCamera;
+	
+	BitmapFont debugMessage;
 
 	SpriteBatch batch;
 	Sprite box;
 	Sprite cards;
 	Grid grid;
+	
+	boolean first = true;
+	String inputDebug = "Input debug: ";
+	String timingDebug = "Timing debug: 0.0";
+	String fpsDebug = "FPS: ";
+	
+	float deltaTime;
+	float debugClearClock;
+	float timingClock;
 
 	public CMYKW(int w, int h) {
 		SCREEN_WIDTH = w;
@@ -45,6 +58,8 @@ InputProcessor {
 		gameCamera.update();
 		
 		batch = new SpriteBatch();
+		
+		debugMessage = new BitmapFont();
 
 		box = new Sprite(new Texture(Gdx.files.internal("images/positionbox.png")));
 		box.setCenter(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
@@ -55,7 +70,8 @@ InputProcessor {
 		grid = new Grid(box);
 		
 		grid.printGrid("Start");
-
+		
+		debugClearClock = 0.0f;
 	}
 
 	@Override
@@ -67,6 +83,8 @@ InputProcessor {
 	public void render() {
 		Gdx.gl.glClearColor(0.75f, 0.75f, 0.75f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		deltaTime = Gdx.graphics.getDeltaTime();
+		debugClearClock += deltaTime;
 		
 		if(rotatingLeft && !rotatingRight) {
 			rotatingLeft = true;
@@ -76,11 +94,31 @@ InputProcessor {
 			rotateCameraRight();
 		}
 		
+		if (!rotatingLeft && !rotatingRight) {
+			timingClock--;
+			timingDebug = "Timing debug: " + timingClock;
+			if (timingClock <= 0) {
+				timingClock = 0;
+				timingDebug = "Timing debug: " + timingClock + " : DROP";
+				grid.drop();
+			}
+		}
+		
+		if(debugClearClock > 1) {
+			inputDebug = "Input debug: ";
+			debugClearClock = 0.0f;
+		}
+		
 		//WORLD CAMERA
 		worldCamera.update();
 		batch.setProjectionMatrix(worldCamera.combined);
 		batch.begin();
-		//TODO Draw debug strings
+		debugMessage.setColor(Color.GREEN);
+		debugMessage.draw(batch, inputDebug, 10, 20);
+		debugMessage.setColor(Color.RED);
+		debugMessage.draw(batch, timingDebug, 10, 40);
+		debugMessage.setColor(Color.YELLOW);
+		debugMessage.draw(batch, fpsDebug + Gdx.graphics.getFramesPerSecond(), SCREEN_WIDTH - 100, 20);
 		batch.end();
 		
 		//GAME CAMERA
@@ -110,10 +148,16 @@ InputProcessor {
 			grid.rotateLeft();
 			rotatingLeft = true;
 			grid.printGrid("Rot L");
+			debugClearClock = 0;
+			timingClock = 50;
+			timingDebug = "Timing debug: " + timingClock;
 		} else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
 			grid.rotateRight();
 			rotatingRight = true;
 			grid.printGrid("Rot R");
+			debugClearClock = 0;
+			timingClock = 50;
+			timingDebug = "Timing debug: " + timingClock;
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
 			grid.drop();
 			grid.printGrid("Drops");
